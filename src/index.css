@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+@theme {
+  --color-dark-bg: #121212;
+  --color-focus-line: rgba(255, 255, 255, 0.1);
+  --color-ui-text: #e0e0e0;
+  --color-ui-dim: #666;
+  --color-ui-accent: #444;
+  --font-sans: 'Helvetica Neue', Arial, sans-serif;
+}
+
+:root {
+  background-color: var(--color-dark-bg);
+  color: var(--color-ui-text);
+  overflow: hidden;
+  touch-action: none;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-dark-bg);
+  font-family: var(--font-sans);
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Vignette Overlay - Hardened for Focused Study */
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 30;
+  background: linear-gradient(
+    to bottom,
+    rgba(18, 18, 18, 1) 0%,
+    rgba(18, 18, 18, 0.98) 15%,
+    rgba(18, 18, 18, 0) 35%,
+    rgba(18, 18, 18, 0) 65%,
+    rgba(18, 18, 18, 0.98) 85%,
+    rgba(18, 18, 18, 1) 100%
+  );
+}
+
+/* Center Markers / Focus Guides */
+.focus-guides {
+  position: absolute;
+  top: 35%;
+  bottom: 35%;
+  left: 0;
+  right: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 31;
+  pointer-events: none;
+  box-shadow: 0 0 100px rgba(0,0,0,0.5);
+}
+
+/* UI Chrome Components */
+.status-pill {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-ui-dim);
+  backdrop-filter: blur(4px);
+}
+
+.arrow {
+  width: 10px;
+  height: 10px;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  transform: rotate(45deg);
+}
+
+.arrow-down {
+  transform: rotate(225deg);
+}
+
+.scroll-container {
+  will-change: transform;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  z-index: 1;
+}
+
+.study-image {
+  width: 95vw;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+}
