@@ -55,7 +55,11 @@ export default function App() {
   const scale = useMemo(() => {
     const w = dimensions.width || DEFAULT_WIDTH;
     const vw = viewportWidth || 1200;
-    return (vw * 0.95) / w;
+    // Balanced rail space to avoid overlap while maximizing content
+    const railSpace = vw < 768 ? 32 : 64; 
+    const availableWidth = vw - railSpace - 16; 
+    const zoomModifier = 1.08; // Increased from 1.05 to 1.08 as per user request
+    return Math.max(0.01, (availableWidth * zoomModifier) / w);
   }, [viewportWidth, dimensions.width]);
 
   const scaledHeight = useMemo(() => {
@@ -137,6 +141,7 @@ export default function App() {
 
   const arrowUpOpacity = useTransform(progressValue, [0, 5], [0, 1]);
   const arrowDownOpacity = useTransform(progressValue, [95, 100], [1, 0]);
+  const railOpacity = 1; // Always visible for accessibility
 
   const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
 
@@ -216,45 +221,48 @@ export default function App() {
         )}
       </div>
 
-      {/* Navigation Arrows & Jump Buttons */}
+      {/* Navigation Rail (Left Side) - Integrated & Compact */}
       {imageObject && (
-        <>
-          <motion.div 
-            style={{ opacity: arrowUpOpacity }}
-            className="absolute top-24 left-8 z-[60] pointer-events-none flex flex-col items-center gap-2"
+        <motion.div 
+          style={{ opacity: railOpacity }}
+          className="absolute left-0 top-0 bottom-0 w-[32px] md:w-[64px] z-[60] flex flex-col items-center justify-center gap-4 pointer-events-none"
+        >
+          {/* Top Jump */}
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              scrollY.set(maxScroll);
+            }}
+            className="p-2 md:p-4 rounded-full bg-white/5 hover:bg-white/20 active:scale-95 transition-all group pointer-events-auto cursor-pointer backdrop-blur-md border border-white/5 shadow-xl"
+            title="Jump to Start"
           >
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                scrollY.set(maxScroll);
-              }}
-              className="p-4 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 transition-all group pointer-events-auto cursor-pointer backdrop-blur-sm"
-              title="Jump to Start"
-            >
-              <ChevronsUp className="w-5 h-5 text-white/60 group-hover:text-white/90" />
-            </button>
-            <div className="w-[1px] h-4 bg-white/10" />
-            <ArrowUp className="w-4 h-4 text-white/20 animate-bounce" />
-          </motion.div>
+            <ChevronsUp className="w-4 h-4 md:w-6 md:h-6 text-white/50 group-hover:text-white/90" />
+          </button>
 
-          <motion.div 
-            style={{ opacity: arrowDownOpacity }}
-            className="absolute bottom-24 left-8 z-[60] pointer-events-none flex flex-col items-center gap-2"
-          >
-            <ArrowDown className="w-4 h-4 text-white/20 animate-bounce" />
-            <div className="w-[1px] h-4 bg-white/10" />
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                scrollY.set(minScroll);
-              }}
-              className="p-4 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 transition-all group pointer-events-auto cursor-pointer backdrop-blur-sm"
-              title="Jump to End"
+          {/* Progress Indicator Integrated Vertical */}
+          <div className="flex flex-col items-center gap-4 py-2">
+            <div className="w-[1px] h-10 md:h-20 bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+            <div 
+              className="text-[8px] md:text-[11px] font-mono tracking-[0.4em] text-white/40 uppercase whitespace-nowrap select-none"
+              style={{ writingMode: 'vertical-rl' }}
             >
-              <ChevronsDown className="w-5 h-5 text-white/60 group-hover:text-white/90" />
-            </button>
-          </motion.div>
-        </>
+              Slide to Study
+            </div>
+            <div className="w-[1px] h-10 md:h-20 bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+          </div>
+
+          {/* Bottom Jump */}
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              scrollY.set(minScroll);
+            }}
+            className="p-2 md:p-4 rounded-full bg-white/5 hover:bg-white/20 active:scale-95 transition-all group pointer-events-auto cursor-pointer backdrop-blur-md border border-white/5 shadow-xl"
+            title="Jump to End"
+          >
+            <ChevronsDown className="w-4 h-4 md:w-6 md:h-6 text-white/50 group-hover:text-white/90" />
+          </button>
+        </motion.div>
       )}
 
       {/* Loading/Empty State */}
@@ -284,18 +292,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Navigation Hint */}
-      {imageObject && (
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="absolute right-6 md:right-10 top-1/2 -translate-y-1/2 flex flex-col items-center gap-6 pointer-events-none z-40"
-        >
-          <div className="w-[1px] h-20 bg-gradient-to-b from-transparent via-white/10 to-transparent" />
-          <p className="text-[9px] [writing-mode:vertical-rl] tracking-[6px] text-[#444] uppercase font-bold">Slide to Study</p>
-          <div className="w-[1px] h-20 bg-gradient-to-t from-transparent via-white/10 to-transparent" />
-        </motion.div>
-      )}
+      {/* Removed old navigation hint */}
 
       {/* Progress Bar Footer */}
       {imageObject && (
@@ -313,9 +310,10 @@ export default function App() {
       {/* The Scrollable Papyrus */}
       {imageObject && (
         <motion.div
-          className="absolute left-0 right-0 z-10"
+          className="absolute left-0 top-0 w-full z-10 flex flex-col items-center"
           style={{ 
             y: smoothY,
+            paddingLeft: '3%',
             willChange: 'transform',
             transformStyle: 'preserve-3d'
           }}
@@ -381,9 +379,10 @@ const PapyrusChunk: React.FC<ChunkProps> = ({ image, chunk, scale, canvasWidth }
       height={Math.floor(chunk.h * scale)}
       className="block"
       style={{
-        width: '95vw',
+        width: `${canvasWidth}px`,
         height: 'auto',
-        backgroundColor: '#121212'
+        backgroundColor: '#121212',
+        imageRendering: 'auto'
       }}
     />
   );
@@ -405,4 +404,3 @@ function DepthDisplay({ value }: { value: any }) {
 
   return <span ref={ref} className="text-white font-mono">{Math.round(value.get()).toLocaleString()}</span>;
 }
-
