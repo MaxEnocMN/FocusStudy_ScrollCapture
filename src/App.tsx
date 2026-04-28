@@ -183,6 +183,23 @@ export default function App() {
     }
   };
 
+  // Keyboard Support: Arrow keys to scroll
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (imageObject) {
+        const step = viewportHeight * 0.15; // Move 15% of viewport per press
+        if (e.key === 'ArrowUp') {
+          scrollY.set(Math.min(maxScroll, scrollY.get() + step));
+        } else if (e.key === 'ArrowDown') {
+          scrollY.set(Math.max(minScroll, scrollY.get() - step));
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [imageObject, scrollY, maxScroll, minScroll, viewportHeight]);
+
   return (
     <div 
       ref={containerRef}
